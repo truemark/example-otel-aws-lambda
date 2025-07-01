@@ -65,15 +65,16 @@ export class ExampleOtelLambdaStack extends cdk.Stack {
     // Java Lambda Function
     const javaFunction = new lambda.Function(this, 'JavaHelloWorldFunction', {
       runtime: lambda.Runtime.JAVA_21,
-      handler: 'example.Handler::handleRequest',
+      handler: 'example.Handler',
       code: lambda.Code.fromAsset(path.join(__dirname, '../../lambdas/java'), {
         bundling: {
-          image: lambda.Runtime.JAVA_17.bundlingImage,
+          image: lambda.Runtime.JAVA_21.bundlingImage,
           command: [
             '/bin/sh',
             '-c',
-            'mvn clean install && cp /asset-input/target/*.jar /asset-output/'
-          ]
+            'export MAVEN_OPTS="-Dmaven.repo.local=/tmp/.m2" && mvn clean install -Dmaven.repo.local=/tmp/.m2 && cp /asset-input/target/*.jar /asset-output/'
+          ],
+          user: 'root'
         }
       }),
       functionName: 'hello-world-java',

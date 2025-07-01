@@ -18,7 +18,7 @@ echo "✅ AWS credentials verified"
 # Check if CDK is installed
 if ! command -v cdk &> /dev/null; then
     echo "❌ AWS CDK is not installed"
-    echo "Please install CDK globally: npm install -g aws-cdk"
+    echo "Please install CDK globally: pnpm install -g aws-cdk"
     exit 1
 fi
 
@@ -29,11 +29,11 @@ cd cdk
 
 # Install dependencies
 echo "📦 Installing CDK dependencies..."
-npm install
+pnpm install
 
 # Build the project
 echo "🔨 Building CDK project..."
-npm run build
+pnpm run build
 
 # Check if CDK is bootstrapped
 echo "🔍 Checking CDK bootstrap status..."
