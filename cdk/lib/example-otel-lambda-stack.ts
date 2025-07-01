@@ -42,7 +42,7 @@ export class ExampleOtelLambdaStack extends cdk.Stack {
 
     // .NET Lambda Function
     const dotnetFunction = new lambda.Function(this, 'DotnetHelloWorldFunction', {
-      runtime: lambda.Runtime.DOTNET_9,
+      runtime: lambda.Runtime.DOTNET_8,
       handler: 'HelloWorldDotNet::HelloWorldDotNet.Function::FunctionHandler',
       code: lambda.Code.fromAsset(path.join(__dirname, '../../lambdas/dotnet'), {
         bundling: {
