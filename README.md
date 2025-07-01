@@ -1,10 +1,11 @@
 # Example OpenTelemetry AWS Lambda Multi-Runtime Project
 
-This project demonstrates basic "Hello World" AWS Lambda functions implemented in four different runtimes:
+This project demonstrates basic "Hello World" AWS Lambda functions implemented in five different runtimes:
 - **NodeJS** (JavaScript)
 - **Python**
 - **.NET** (C#)
 - **Java**
+- **Go**
 
 All functions are deployed using AWS CDK and exposed via API Gateway HTTP API (v2) for easy testing.
 
@@ -27,10 +28,14 @@ All functions are deployed using AWS CDK and exposed via API Gateway HTTP API (v
 │   ├── dotnet/
 │   │   ├── Function.cs          # .NET Lambda handler
 │   │   └── HelloWorld.csproj
-│   └── java/
-│       ├── src/main/java/example/
-│       │   └── Handler.java     # Java Lambda handler
-│       └── pom.xml
+│   ├── java/
+│   │   ├── src/main/java/example/
+│   │   │   └── Handler.java     # Java Lambda handler
+│   │   └── pom.xml
+│   └── go/
+│       ├── main.go              # Go Lambda handler
+│       ├── go.mod               # Go module definition
+│       └── go.sum               # Go dependencies
 └── README.md
 ```
 
@@ -49,13 +54,14 @@ Once deployed, you can test the functions via these API Gateway endpoints:
 - `GET /python` - Python Lambda function  
 - `GET /dotnet` - .NET Lambda function
 - `GET /java` - Java Lambda function
+- `GET /go` - Go Lambda function
 
 ## Prerequisites
 
 - **AWS CLI** configured with appropriate credentials
 - **Node.js** (v18 or later) for CDK
 - **AWS CDK** installed globally: `npm install -g aws-cdk`
-- **Docker** (required for .NET and Java Lambda bundling)
+- **Docker** (required for .NET, Java, and Go Lambda bundling)
 
 ### ECR Authentication for Docker Bundling
 
@@ -79,6 +85,7 @@ Error response from daemon: pull access denied for public.ecr.aws/lambda/dotnet,
 - **Python 3.12** for Python Lambda development
 - **.NET 8 SDK** for .NET Lambda development  
 - **Java 17** and **Maven** for Java Lambda development
+- **Go 1.21+** for Go Lambda development
 
 ## Deployment
 
@@ -112,6 +119,7 @@ curl <HTTP_API_URL>/nodejs
 curl <HTTP_API_URL>/python
 curl <HTTP_API_URL>/dotnet
 curl <HTTP_API_URL>/java
+curl <HTTP_API_URL>/go
 ```
 
 Example response:
@@ -164,6 +172,13 @@ mvn clean compile
 # Use AWS Lambda Test Tool or SAM CLI for local testing
 ```
 
+### Go
+```bash
+cd lambdas/go
+go run main.go
+# Use AWS Lambda Test Tool or SAM CLI for local testing
+```
+
 ## Cleanup
 
 To remove all deployed resources:
@@ -175,8 +190,8 @@ cdk destroy
 ## Architecture
 
 The CDK stack creates:
-- 4 Lambda functions (one per runtime)
-- 1 API Gateway HTTP API (v2) with 4 endpoints
+- 5 Lambda functions (one per runtime)
+- 1 API Gateway HTTP API (v2) with 5 endpoints
 - CloudWatch Log Groups for each function
 - IAM roles and policies for Lambda execution
 

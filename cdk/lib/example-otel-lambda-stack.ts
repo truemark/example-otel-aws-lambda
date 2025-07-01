@@ -87,6 +87,37 @@ export class ExampleOtelLambdaStack extends cdk.Stack {
       logRetention: logs.RetentionDays.ONE_WEEK
     });
 
+    // Go Lambda Function
+    const goFunction = new lambda.Function(this, 'GoHelloWorldFunction', {
+      runtime: lambda.Runtime.PROVIDED_AL2023,
+      handler: 'bootstrap',
+      code: lambda.Code.fromAsset(path.join(__dirname, '../../lambdas/go'), {
+        bundling: {
+          image: lambda.Runtime.PROVIDED_AL2023.bundlingImage,
+          platform: 'linux/amd64', // Explicit platform for ARM Mac compatibility
+          command: [
+            '/bin/sh',
+            '-c',
+            'dnf install -y golang && ' +  // Use dnf instead of yum for AL2023
+            'export GOPROXY=direct && ' +
+            'export GOSUMDB=off && ' +
+            'export CGO_ENABLED=0 && ' +
+            'export GOOS=linux && ' +
+            'export GOARCH=amd64 && ' +
+            'cd /asset-input && ' +
+            'go mod download && ' +
+            'go build -ldflags="-s -w" -o /asset-output/bootstrap main.go'
+          ],
+          user: 'root'
+        }
+      }),
+      functionName: 'hello-world-go',
+      description: 'Hello World Lambda function in Go',
+      timeout: cdk.Duration.seconds(30),
+      memorySize: 128,
+      logRetention: logs.RetentionDays.ONE_WEEK
+    });
+
     // Create HTTP API (API Gateway v2) to test the functions
     const httpApi = new apigatewayv2.HttpApi(this, 'HelloWorldHttpApi', {
       apiName: 'Hello World HTTP API',
@@ -103,6 +134,7 @@ export class ExampleOtelLambdaStack extends cdk.Stack {
     const pythonIntegration = new apigatewayv2Integrations.HttpLambdaIntegration('PythonIntegration', pythonFunction);
     const dotnetIntegration = new apigatewayv2Integrations.HttpLambdaIntegration('DotnetIntegration', dotnetFunction);
     const javaIntegration = new apigatewayv2Integrations.HttpLambdaIntegration('JavaIntegration', javaFunction);
+    const goIntegration = new apigatewayv2Integrations.HttpLambdaIntegration('GoIntegration', goFunction);
 
     // Create HTTP API routes
     httpApi.addRoutes({
@@ -127,6 +159,12 @@ export class ExampleOtelLambdaStack extends cdk.Stack {
       path: '/java',
       methods: [apigatewayv2.HttpMethod.GET],
       integration: javaIntegration
+    });
+
+    httpApi.addRoutes({
+      path: '/go',
+      methods: [apigatewayv2.HttpMethod.GET],
+      integration: goIntegration
     });
 
     // Output the HTTP API URL
@@ -155,6 +193,11 @@ export class ExampleOtelLambdaStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'JavaFunctionArn', {
       value: javaFunction.functionArn,
       description: 'ARN of the Java Lambda function'
+    });
+
+    new cdk.CfnOutput(this, 'GoFunctionArn', {
+      value: goFunction.functionArn,
+      description: 'ARN of the Go Lambda function'
     });
   }
 }
