@@ -11,18 +11,18 @@ export class ExampleOtelLambdaStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // ADOT Lambda Layer ARNs (us-east-1 region)
+    // ADOT Lambda Layer ARNs (region-agnostic using current versions)
     const adotLayers = {
       nodejs: lambda.LayerVersion.fromLayerVersionArn(this, 'AdotNodejsLayer', 
-        'arn:aws:lambda:us-east-1:901920570463:layer:aws-otel-nodejs-amd64-ver-1-18-1:4'),
+        `arn:aws:lambda:${this.region}:901920570463:layer:aws-otel-nodejs-amd64-ver-1-30-2:1`),
       python: lambda.LayerVersion.fromLayerVersionArn(this, 'AdotPythonLayer', 
-        'arn:aws:lambda:us-east-1:901920570463:layer:aws-otel-python-amd64-ver-1-20-0:3'),
+        `arn:aws:lambda:${this.region}:901920570463:layer:aws-otel-python-amd64-ver-1-32-0:2`),
       dotnet: lambda.LayerVersion.fromLayerVersionArn(this, 'AdotDotnetLayer', 
-        'arn:aws:lambda:us-east-1:901920570463:layer:aws-otel-dotnet-amd64-ver-1-2-0:2'),
+        `arn:aws:lambda:${this.region}:901920570463:layer:aws-otel-collector-amd64-ver-0-117-0:1`),
       java: lambda.LayerVersion.fromLayerVersionArn(this, 'AdotJavaLayer', 
-        'arn:aws:lambda:us-east-1:901920570463:layer:aws-otel-java-wrapper-amd64-ver-1-32-0:3'),
+        `arn:aws:lambda:${this.region}:901920570463:layer:aws-otel-java-wrapper-amd64-ver-1-32-0:6`),
       collector: lambda.LayerVersion.fromLayerVersionArn(this, 'AdotCollectorLayer', 
-        'arn:aws:lambda:us-east-1:901920570463:layer:aws-otel-collector-amd64-ver-0-90-1:2')
+        `arn:aws:lambda:${this.region}:901920570463:layer:aws-otel-collector-amd64-ver-0-117-0:1`)
     };
 
     // CloudWatch metrics policy for all Lambda functions
@@ -49,7 +49,7 @@ export class ExampleOtelLambdaStack extends cdk.Stack {
         NODE_ENV: 'production',
         OTEL_METRICS_EXPORTER: 'cloudwatch',
         OTEL_RESOURCE_ATTRIBUTES: 'service.name=hello-world-nodejs',
-        AWS_LAMBDA_EXEC_WRAPPER: '/opt/otel-instrument'
+        AWS_LAMBDA_EXEC_WRAPPER: '/opt/otel-handler'
       }
     });
     nodejsFunction.addToRolePolicy(cloudWatchMetricsPolicy);
@@ -129,7 +129,7 @@ export class ExampleOtelLambdaStack extends cdk.Stack {
       environment: {
         OTEL_METRICS_EXPORTER: 'cloudwatch',
         OTEL_RESOURCE_ATTRIBUTES: 'service.name=hello-world-java',
-        AWS_LAMBDA_EXEC_WRAPPER: '/opt/otel-instrument'
+        AWS_LAMBDA_EXEC_WRAPPER: '/opt/otel-handler'
       }
     });
     javaFunction.addToRolePolicy(cloudWatchMetricsPolicy);
