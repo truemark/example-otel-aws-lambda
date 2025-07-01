@@ -72,7 +72,10 @@ export class ExampleOtelLambdaStack extends cdk.Stack {
           command: [
             '/bin/sh',
             '-c',
-            'export MAVEN_OPTS="-Dmaven.repo.local=/tmp/.m2" && mvn clean install -Dmaven.repo.local=/tmp/.m2 && cp /asset-input/target/*.jar /asset-output/'
+            'export MAVEN_OPTS="-Dmaven.repo.local=/tmp/.m2" && ' +
+            'mvn clean package -Dmaven.repo.local=/tmp/.m2 && ' +
+            'find /asset-input/target -name "*.jar" -not -name "original-*" -exec cp {} /asset-output/ \\; && ' +
+            'ls -la /asset-output/'
           ],
           user: 'root'
         }
