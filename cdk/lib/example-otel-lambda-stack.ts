@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
-import * as apigateway from 'aws-cdk-lib/aws-apigateway';
+import * as apigatewayv2 from 'aws-cdk-lib/aws-apigatewayv2';
+import * as apigatewayv2Integrations from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import { Construct } from 'constructs';
 import * as path from 'path';
@@ -82,34 +83,53 @@ export class ExampleOtelLambdaStack extends cdk.Stack {
       logRetention: logs.RetentionDays.ONE_WEEK
     });
 
-    // Create API Gateway to test the functions
-    const api = new apigateway.RestApi(this, 'HelloWorldApi', {
-      restApiName: 'Hello World Service',
-      description: 'API Gateway for Hello World Lambda functions',
-      defaultCorsPreflightOptions: {
-        allowOrigins: apigateway.Cors.ALL_ORIGINS,
-        allowMethods: apigateway.Cors.ALL_METHODS,
+    // Create HTTP API (API Gateway v2) to test the functions
+    const httpApi = new apigatewayv2.HttpApi(this, 'HelloWorldHttpApi', {
+      apiName: 'Hello World HTTP API',
+      description: 'HTTP API for Hello World Lambda functions',
+      corsPreflight: {
+        allowOrigins: ['*'],
+        allowMethods: [apigatewayv2.CorsHttpMethod.GET, apigatewayv2.CorsHttpMethod.POST, apigatewayv2.CorsHttpMethod.OPTIONS],
         allowHeaders: ['Content-Type', 'X-Amz-Date', 'Authorization', 'X-Api-Key']
       }
     });
 
-    // Add API Gateway integrations
-    const nodejsIntegration = new apigateway.LambdaIntegration(nodejsFunction);
-    const pythonIntegration = new apigateway.LambdaIntegration(pythonFunction);
-    const dotnetIntegration = new apigateway.LambdaIntegration(dotnetFunction);
-    const javaIntegration = new apigateway.LambdaIntegration(javaFunction);
+    // Add HTTP API integrations
+    const nodejsIntegration = new apigatewayv2Integrations.HttpLambdaIntegration('NodejsIntegration', nodejsFunction);
+    const pythonIntegration = new apigatewayv2Integrations.HttpLambdaIntegration('PythonIntegration', pythonFunction);
+    const dotnetIntegration = new apigatewayv2Integrations.HttpLambdaIntegration('DotnetIntegration', dotnetFunction);
+    const javaIntegration = new apigatewayv2Integrations.HttpLambdaIntegration('JavaIntegration', javaFunction);
 
-    // Create API routes
-    api.root.addResource('nodejs').addMethod('GET', nodejsIntegration);
-    api.root.addResource('python').addMethod('GET', pythonIntegration);
-    api.root.addResource('dotnet').addMethod('GET', dotnetIntegration);
-    api.root.addResource('java').addMethod('GET', javaIntegration);
+    // Create HTTP API routes
+    httpApi.addRoutes({
+      path: '/nodejs',
+      methods: [apigatewayv2.HttpMethod.GET],
+      integration: nodejsIntegration
+    });
 
-    // Output the API Gateway URL
-    new cdk.CfnOutput(this, 'ApiGatewayUrl', {
-      value: api.url,
-      description: 'URL of the API Gateway',
-      exportName: 'HelloWorldApiUrl'
+    httpApi.addRoutes({
+      path: '/python',
+      methods: [apigatewayv2.HttpMethod.GET],
+      integration: pythonIntegration
+    });
+
+    httpApi.addRoutes({
+      path: '/dotnet',
+      methods: [apigatewayv2.HttpMethod.GET],
+      integration: dotnetIntegration
+    });
+
+    httpApi.addRoutes({
+      path: '/java',
+      methods: [apigatewayv2.HttpMethod.GET],
+      integration: javaIntegration
+    });
+
+    // Output the HTTP API URL
+    new cdk.CfnOutput(this, 'HttpApiUrl', {
+      value: httpApi.url!,
+      description: 'URL of the HTTP API',
+      exportName: 'HelloWorldHttpApiUrl'
     });
 
     // Output individual function ARNs

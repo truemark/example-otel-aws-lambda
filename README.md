@@ -6,7 +6,7 @@ This project demonstrates basic "Hello World" AWS Lambda functions implemented i
 - **.NET** (C#)
 - **Java**
 
-All functions are deployed using AWS CDK and exposed via API Gateway for easy testing.
+All functions are deployed using AWS CDK and exposed via API Gateway HTTP API (v2) for easy testing.
 
 ## Project Structure
 
@@ -81,7 +81,7 @@ Once deployed, you can test the functions via these API Gateway endpoints:
    ```
 
 4. **Note the outputs:** After deployment, CDK will output:
-   - API Gateway URL
+   - HTTP API URL
    - Individual Lambda function ARNs
 
 ## Testing the Functions
@@ -89,11 +89,11 @@ Once deployed, you can test the functions via these API Gateway endpoints:
 After deployment, you can test each function:
 
 ```bash
-# Replace <API_GATEWAY_URL> with the actual URL from CDK output
-curl <API_GATEWAY_URL>/nodejs
-curl <API_GATEWAY_URL>/python
-curl <API_GATEWAY_URL>/dotnet
-curl <API_GATEWAY_URL>/java
+# Replace <HTTP_API_URL> with the actual URL from CDK output
+curl <HTTP_API_URL>/nodejs
+curl <HTTP_API_URL>/python
+curl <HTTP_API_URL>/dotnet
+curl <HTTP_API_URL>/java
 ```
 
 Example response:
@@ -158,9 +158,18 @@ cdk destroy
 
 The CDK stack creates:
 - 4 Lambda functions (one per runtime)
-- 1 API Gateway REST API with 4 endpoints
+- 1 API Gateway HTTP API (v2) with 4 endpoints
 - CloudWatch Log Groups for each function
 - IAM roles and policies for Lambda execution
+
+### HTTP API vs REST API
+
+This project uses **API Gateway HTTP API (v2)** instead of REST API for the following benefits:
+- **Up to 70% lower cost** compared to REST API
+- **Lower latency** (up to 60% faster response times)
+- **Simpler configuration** with built-in CORS support
+- **Automatic deployments** without explicit deployment stages
+- **Better performance** for high-throughput applications
 
 ## Future Enhancements
 
