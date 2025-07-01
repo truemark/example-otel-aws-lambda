@@ -57,6 +57,24 @@ Once deployed, you can test the functions via these API Gateway endpoints:
 - **AWS CDK** installed globally: `npm install -g aws-cdk`
 - **Docker** (required for .NET and Java Lambda bundling)
 
+### ECR Authentication for Docker Bundling
+
+The .NET and Java Lambda functions use Docker bundling during deployment, which pulls base images from AWS's public ECR repositories. You need to authenticate with public ECR before deployment:
+
+```bash
+aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
+```
+
+**Important notes:**
+- This authentication is required even for public ECR repositories
+- The login token expires after 12 hours, so you may need to re-authenticate for subsequent deployments
+- If you skip this step, you'll see Docker pull errors during `cdk deploy` or `cdk synth`
+
+**Common error without authentication:**
+```
+Error response from daemon: pull access denied for public.ecr.aws/lambda/dotnet, repository does not exist or may require 'docker login'
+```
+
 ### Optional (for local development):
 - **Python 3.12** for Python Lambda development
 - **.NET 8 SDK** for .NET Lambda development  
