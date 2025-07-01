@@ -1,2 +1,6 @@
-# No additional dependencies required
+# OpenTelemetry dependencies for metrics
+opentelemetry-api==1.21.0
+opentelemetry-sdk==1.21.0
+opentelemetry-semantic-conventions==0.42b0
+
 # boto3 and botocore are provided by the AWS Lambda runtime

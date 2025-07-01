@@ -1,7 +1,7 @@
 {
   "name": "nodejs-hello-world-lambda",
   "version": "1.0.0",
-  "description": "A simple Hello World Lambda function in NodeJS",
+  "description": "A simple Hello World Lambda function in NodeJS with OTEL metrics",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -10,9 +10,14 @@
     "aws",
     "lambda",
     "nodejs",
-    "hello-world"
+    "hello-world",
+    "opentelemetry"
   ],
   "author": "",
   "license": "MIT",
-  "dependencies": {}
+  "dependencies": {
+    "@opentelemetry/api": "^1.8.0",
+    "@opentelemetry/resources": "^1.21.0",
+    "@opentelemetry/semantic-conventions": "^1.21.0"
+  }
 }

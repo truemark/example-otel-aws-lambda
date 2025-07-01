@@ -28,10 +28,23 @@ type ResponseBody struct {
 	FunctionVersion string `json:"functionVersion"`
 	MemoryLimitMB   int32  `json:"memoryLimitInMB"`
 	RemainingTimeMS int64  `json:"remainingTimeInMillis"`
+	OtelEnabled     bool   `json:"otelEnabled"`
 }
+
+// Metrics counters (simple approach for ADOT collector)
+var (
+	invocationCount = 0
+	successCount    = 0
+	errorCount      = 0
+)
 
 // Handler is the Lambda function handler
 func Handler(ctx context.Context, request events.APIGatewayV2HTTPRequest) (Response, error) {
+	startTime := time.Now()
+
+	// Increment invocation counter
+	invocationCount++
+
 	// Log the incoming event
 	eventJSON, _ := json.Marshal(request)
 	log.Printf("Event: %s", string(eventJSON))
@@ -45,6 +58,14 @@ func Handler(ctx context.Context, request events.APIGatewayV2HTTPRequest) (Respo
 		remainingTimeMS = int64(time.Until(deadline) / time.Millisecond)
 	}
 
+	// Log metrics for ADOT collector to pick up
+	log.Printf("METRIC lambda_invocations_total{runtime=\"go\",function_name=\"%s\",function_version=\"%s\"} %d",
+		lambdacontext.FunctionName, lambdacontext.FunctionVersion, invocationCount)
+	log.Printf("METRIC hello_world_requests_total{runtime=\"go\"} %d", invocationCount)
+
+	statusCode := 200
+	status := "success"
+
 	// Create response body
 	responseBody := ResponseBody{
 		Message:         "Hello World from Go Lambda!",
@@ -55,24 +76,39 @@ func Handler(ctx context.Context, request events.APIGatewayV2HTTPRequest) (Respo
 		FunctionVersion: lambdacontext.FunctionVersion,
 		MemoryLimitMB:   int32(lambdacontext.MemoryLimitInMB),
 		RemainingTimeMS: remainingTimeMS,
+		OtelEnabled:     true,
 	}
 
 	// Convert response body to JSON
 	bodyJSON, err := json.Marshal(responseBody)
 	if err != nil {
 		log.Printf("Error marshaling response body: %v", err)
+
+		statusCode = 500
+		status = "error"
+		errorCount++
+
+		// Log error metrics
+		duration := time.Since(startTime).Seconds()
+		log.Printf("METRIC lambda_duration_seconds{runtime=\"go\",function_name=\"%s\",status=\"%s\"} %f",
+			lambdacontext.FunctionName, status, duration)
+		log.Printf("METRIC lambda_status_total{runtime=\"go\",function_name=\"%s\",status=\"%s\"} %d",
+			lambdacontext.FunctionName, status, errorCount)
+
 		return Response{
-			StatusCode: 500,
+			StatusCode: statusCode,
 			Headers: map[string]string{
 				"Content-Type": "application/json",
 			},
-			Body: `{"error": "Internal server error"}`,
+			Body: `{"error": "Internal server error", "runtime": "go", "otelEnabled": true}`,
 		}, err
 	}
 
+	successCount++
+
 	// Create HTTP response
 	response := Response{
-		StatusCode: 200,
+		StatusCode: statusCode,
 		Headers: map[string]string{
 			"Content-Type": "application/json",
 		},
@@ -82,6 +118,13 @@ func Handler(ctx context.Context, request events.APIGatewayV2HTTPRequest) (Respo
 	// Log the response
 	responseJSON, _ := json.Marshal(response)
 	log.Printf("Response: %s", string(responseJSON))
+
+	// Log success metrics
+	duration := time.Since(startTime).Seconds()
+	log.Printf("METRIC lambda_duration_seconds{runtime=\"go\",function_name=\"%s\",status=\"%s\"} %f",
+		lambdacontext.FunctionName, status, duration)
+	log.Printf("METRIC lambda_status_total{runtime=\"go\",function_name=\"%s\",status=\"%s\"} %d",
+		lambdacontext.FunctionName, status, successCount)
 
 	return response, nil
 }

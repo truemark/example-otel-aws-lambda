@@ -3,6 +3,7 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigatewayv2 from 'aws-cdk-lib/aws-apigatewayv2';
 import * as apigatewayv2Integrations from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 import * as logs from 'aws-cdk-lib/aws-logs';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 import * as path from 'path';
 
@@ -10,20 +11,48 @@ export class ExampleOtelLambdaStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    // ADOT Lambda Layer ARNs (us-east-1 region)
+    const adotLayers = {
+      nodejs: lambda.LayerVersion.fromLayerVersionArn(this, 'AdotNodejsLayer', 
+        'arn:aws:lambda:us-east-1:901920570463:layer:aws-otel-nodejs-amd64-ver-1-18-1:4'),
+      python: lambda.LayerVersion.fromLayerVersionArn(this, 'AdotPythonLayer', 
+        'arn:aws:lambda:us-east-1:901920570463:layer:aws-otel-python-amd64-ver-1-20-0:3'),
+      dotnet: lambda.LayerVersion.fromLayerVersionArn(this, 'AdotDotnetLayer', 
+        'arn:aws:lambda:us-east-1:901920570463:layer:aws-otel-dotnet-amd64-ver-1-2-0:2'),
+      java: lambda.LayerVersion.fromLayerVersionArn(this, 'AdotJavaLayer', 
+        'arn:aws:lambda:us-east-1:901920570463:layer:aws-otel-java-wrapper-amd64-ver-1-32-0:3'),
+      collector: lambda.LayerVersion.fromLayerVersionArn(this, 'AdotCollectorLayer', 
+        'arn:aws:lambda:us-east-1:901920570463:layer:aws-otel-collector-amd64-ver-0-90-1:2')
+    };
+
+    // CloudWatch metrics policy for all Lambda functions
+    const cloudWatchMetricsPolicy = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        'cloudwatch:PutMetricData'
+      ],
+      resources: ['*']
+    });
+
     // NodeJS Lambda Function
     const nodejsFunction = new lambda.Function(this, 'NodejsHelloWorldFunction', {
       runtime: lambda.Runtime.NODEJS_22_X,
       handler: 'index.handler',
       code: lambda.Code.fromAsset(path.join(__dirname, '../../lambdas/nodejs')),
       functionName: 'hello-world-nodejs',
-      description: 'Hello World Lambda function in NodeJS',
+      description: 'Hello World Lambda function in NodeJS with OTEL',
       timeout: cdk.Duration.seconds(30),
       memorySize: 128,
       logRetention: logs.RetentionDays.ONE_WEEK,
+      layers: [adotLayers.nodejs],
       environment: {
-        NODE_ENV: 'production'
+        NODE_ENV: 'production',
+        OTEL_METRICS_EXPORTER: 'cloudwatch',
+        OTEL_RESOURCE_ATTRIBUTES: 'service.name=hello-world-nodejs',
+        AWS_LAMBDA_EXEC_WRAPPER: '/opt/otel-instrument'
       }
     });
+    nodejsFunction.addToRolePolicy(cloudWatchMetricsPolicy);
 
     // Python Lambda Function
     const pythonFunction = new lambda.Function(this, 'PythonHelloWorldFunction', {
@@ -31,14 +60,19 @@ export class ExampleOtelLambdaStack extends cdk.Stack {
       handler: 'lambda_function.lambda_handler',
       code: lambda.Code.fromAsset(path.join(__dirname, '../../lambdas/python')),
       functionName: 'hello-world-python',
-      description: 'Hello World Lambda function in Python',
+      description: 'Hello World Lambda function in Python with OTEL',
       timeout: cdk.Duration.seconds(30),
       memorySize: 128,
       logRetention: logs.RetentionDays.ONE_WEEK,
+      layers: [adotLayers.python],
       environment: {
-        PYTHONPATH: '/var/runtime'
+        PYTHONPATH: '/var/runtime',
+        OTEL_METRICS_EXPORTER: 'cloudwatch',
+        OTEL_RESOURCE_ATTRIBUTES: 'service.name=hello-world-python',
+        AWS_LAMBDA_EXEC_WRAPPER: '/opt/otel-instrument'
       }
     });
+    pythonFunction.addToRolePolicy(cloudWatchMetricsPolicy);
 
     // .NET Lambda Function
     const dotnetFunction = new lambda.Function(this, 'DotnetHelloWorldFunction', {
@@ -56,11 +90,17 @@ export class ExampleOtelLambdaStack extends cdk.Stack {
         }
       }),
       functionName: 'hello-world-dotnet',
-      description: 'Hello World Lambda function in .NET',
+      description: 'Hello World Lambda function in .NET with OTEL',
       timeout: cdk.Duration.seconds(30),
       memorySize: 256,
-      logRetention: logs.RetentionDays.ONE_WEEK
+      logRetention: logs.RetentionDays.ONE_WEEK,
+      layers: [adotLayers.dotnet],
+      environment: {
+        OTEL_METRICS_EXPORTER: 'cloudwatch',
+        OTEL_RESOURCE_ATTRIBUTES: 'service.name=hello-world-dotnet'
+      }
     });
+    dotnetFunction.addToRolePolicy(cloudWatchMetricsPolicy);
 
     // Java Lambda Function
     const javaFunction = new lambda.Function(this, 'JavaHelloWorldFunction', {
@@ -81,11 +121,18 @@ export class ExampleOtelLambdaStack extends cdk.Stack {
         }
       }),
       functionName: 'hello-world-java',
-      description: 'Hello World Lambda function in Java',
+      description: 'Hello World Lambda function in Java with OTEL',
       timeout: cdk.Duration.seconds(30),
       memorySize: 512,
-      logRetention: logs.RetentionDays.ONE_WEEK
+      logRetention: logs.RetentionDays.ONE_WEEK,
+      layers: [adotLayers.java],
+      environment: {
+        OTEL_METRICS_EXPORTER: 'cloudwatch',
+        OTEL_RESOURCE_ATTRIBUTES: 'service.name=hello-world-java',
+        AWS_LAMBDA_EXEC_WRAPPER: '/opt/otel-instrument'
+      }
     });
+    javaFunction.addToRolePolicy(cloudWatchMetricsPolicy);
 
     // Go Lambda Function
     const goFunction = new lambda.Function(this, 'GoHelloWorldFunction', {
@@ -112,11 +159,17 @@ export class ExampleOtelLambdaStack extends cdk.Stack {
         }
       }),
       functionName: 'hello-world-go',
-      description: 'Hello World Lambda function in Go',
+      description: 'Hello World Lambda function in Go with OTEL',
       timeout: cdk.Duration.seconds(30),
       memorySize: 128,
-      logRetention: logs.RetentionDays.ONE_WEEK
+      logRetention: logs.RetentionDays.ONE_WEEK,
+      layers: [adotLayers.collector],
+      environment: {
+        OTEL_METRICS_EXPORTER: 'cloudwatch',
+        OTEL_RESOURCE_ATTRIBUTES: 'service.name=hello-world-go'
+      }
     });
+    goFunction.addToRolePolicy(cloudWatchMetricsPolicy);
 
     // Create HTTP API (API Gateway v2) to test the functions
     const httpApi = new apigatewayv2.HttpApi(this, 'HelloWorldHttpApi', {

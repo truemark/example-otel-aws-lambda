@@ -19,6 +19,7 @@
         <aws.lambda.java.version>1.2.3</aws.lambda.java.version>
         <aws.lambda.events.version>3.11.4</aws.lambda.events.version>
         <jackson.version>2.15.2</jackson.version>
+        <opentelemetry.version>1.32.0</opentelemetry.version>
     </properties>
 
     <dependencies>
@@ -47,6 +48,25 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <version>${jackson.version}</version>
+        </dependency>
+
+        <!-- OpenTelemetry dependencies -->
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-api</artifactId>
+            <version>${opentelemetry.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk</artifactId>
+            <version>${opentelemetry.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk-metrics</artifactId>
+            <version>${opentelemetry.version}</version>
         </dependency>
 
         <!-- Test dependencies -->
