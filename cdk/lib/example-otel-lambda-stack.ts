@@ -115,6 +115,7 @@ export class ExampleOtelLambdaStack extends cdk.Stack {
             'export MAVEN_OPTS="-Dmaven.repo.local=/tmp/.m2" && ' +
             'mvn clean package -Dmaven.repo.local=/tmp/.m2 && ' +
             'find /asset-input/target -name "*.jar" -not -name "original-*" -exec cp {} /asset-output/ \\; && ' +
+            'cp /asset-input/collector.yaml /asset-output/ && ' +
             'ls -la /asset-output/'
           ],
           user: 'root'
@@ -127,9 +128,11 @@ export class ExampleOtelLambdaStack extends cdk.Stack {
       logRetention: logs.RetentionDays.ONE_WEEK,
       layers: [adotLayers.java],
       environment: {
-        OTEL_METRICS_EXPORTER: 'cloudwatch',
+        OTEL_METRICS_EXPORTER: 'otlp',
+        OTEL_EXPORTER_OTLP_ENDPOINT: 'http://localhost:4318',
         OTEL_RESOURCE_ATTRIBUTES: 'service.name=hello-world-java',
-        AWS_LAMBDA_EXEC_WRAPPER: '/opt/otel-handler'
+        AWS_LAMBDA_EXEC_WRAPPER: '/opt/otel-handler',
+        OPENTELEMETRY_COLLECTOR_CONFIG_URI: '/var/task/collector.yaml'
       }
     });
     javaFunction.addToRolePolicy(cloudWatchMetricsPolicy);

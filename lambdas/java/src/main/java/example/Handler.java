@@ -20,12 +20,13 @@ import java.util.Map;
 
 /**
  * Handler for requests to Lambda function.
+ * Uses ADOT layer for automatic OpenTelemetry configuration.
  */
 public class Handler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     
-    // Initialize metrics
+    // Initialize metrics - ADOT layer will configure the global OpenTelemetry instance
     private static final Meter meter = GlobalOpenTelemetry.getMeter("hello-world-java");
     
     // Create metrics instruments

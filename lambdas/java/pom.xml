@@ -50,22 +50,10 @@
             <version>${jackson.version}</version>
         </dependency>
 
-        <!-- OpenTelemetry dependencies -->
+        <!-- OpenTelemetry API dependency - ADOT layer provides the SDK -->
         <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-api</artifactId>
-            <version>${opentelemetry.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-sdk</artifactId>
-            <version>${opentelemetry.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-sdk-metrics</artifactId>
             <version>${opentelemetry.version}</version>
         </dependency>
 
