@@ -84,6 +84,7 @@ export class ExampleOtelLambdaStack extends cdk.Stack {
           command: [
             '/bin/sh',
             '-c',
+            //'cp /asset-input/collector.yaml /asset-output/ && ' +
             'dotnet tool install -g Amazon.Lambda.Tools && ' +
             'dotnet lambda package --output-package /asset-output/function.zip'
           ]
@@ -97,7 +98,8 @@ export class ExampleOtelLambdaStack extends cdk.Stack {
       layers: [adotLayers.dotnet],
       environment: {
         OTEL_METRICS_EXPORTER: 'cloudwatch',
-        OTEL_RESOURCE_ATTRIBUTES: 'service.name=hello-world-dotnet'
+        OTEL_RESOURCE_ATTRIBUTES: 'service.name=hello-world-dotnet',
+        OPENTELEMETRY_COLLECTOR_CONFIG_URI: '/var/task/collector.yaml'
       }
     });
     dotnetFunction.addToRolePolicy(cloudWatchMetricsPolicy);

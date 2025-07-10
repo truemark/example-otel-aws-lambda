@@ -16,5 +16,8 @@
     <PackageReference Include="OpenTelemetry" Version="1.7.0" />
     <PackageReference Include="OpenTelemetry.Api" Version="1.7.0" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="8.0.0" />
+    <None Update="collector.yaml">
+       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>
