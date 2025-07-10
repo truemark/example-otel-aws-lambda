@@ -105,7 +105,7 @@ export class ExampleOtelLambdaStack extends cdk.Stack {
     // Java Lambda Function
     const javaFunction = new lambda.Function(this, 'JavaHelloWorldFunction', {
       runtime: lambda.Runtime.JAVA_21,
-      handler: 'example.Handler',
+      handler: 'example.Handler::handleRequest',
       code: lambda.Code.fromAsset(path.join(__dirname, '../../lambdas/java'), {
         bundling: {
           image: lambda.Runtime.JAVA_21.bundlingImage,

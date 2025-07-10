@@ -1,0 +1,17 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+exporters:
+  awsemf:
+    region: ${AWS_REGION}
+    log_group_name: /aws/lambda/${AWS_LAMBDA_FUNCTION_NAME}
+    namespace: "TrueMark/Logs"
+
+service:
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      exporters: [awsemf]

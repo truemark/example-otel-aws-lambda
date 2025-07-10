@@ -2,3 +2,4 @@ lambdas/dotnet/bin
 lambdas/dotnet/obj
 lambdas/java/?
 lambdas/java/target
+.idea/
