@@ -13,8 +13,13 @@
     <PackageReference Include="Amazon.Lambda.Core" Version="2.2.0" />
     <PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.0" />
     <PackageReference Include="Amazon.Lambda.APIGatewayEvents" Version="2.6.0" />
+
+    <!-- Pin all OTel packages to 1.7.0 -->
     <PackageReference Include="OpenTelemetry" Version="1.7.0" />
     <PackageReference Include="OpenTelemetry.Api" Version="1.7.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.7.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.7.0" />
+    
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="8.0.0" />
     <None Update="collector.yaml">
        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

@@ -5,10 +5,15 @@ receivers:
       http:
 
 exporters:
+  debug:
+    verbosity: Detailed
   awsemf:
-    region: ${AWS_REGION}
-    log_group_name: /aws/lambda/${AWS_LAMBDA_FUNCTION_NAME}
+    region: us-east-1
+    log_group_name: "/aws/lambda/hello-world-dotnet"
     namespace: "TrueMark/Logs"
+    dimension_rollup_option: "ZeroAndSingleDimensionRollup"
+    resource_to_telemetry_conversion:
+      enabled: true
 
 service:
   pipelines:

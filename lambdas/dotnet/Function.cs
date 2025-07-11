@@ -1,10 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.Text.Json;
-using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.APIGatewayEvents;
+using OpenTelemetry;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
@@ -15,6 +15,14 @@ namespace HelloWorldDotNet
     {
         // Initialize metrics
         private static readonly Meter _meter = new("hello-world-dotnet", "1.0.0");
+
+        // This is the OpenTelemetry MeterProvider that will be used to export metrics
+        private static readonly MeterProvider _meterProvider = Sdk.CreateMeterProviderBuilder()
+            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("hello-world-dotnet"))
+            .AddMeter("hello-world-dotnet")
+            .AddOtlpExporter(opt => opt.Endpoint = new Uri("http://localhost:4317"))
+            .AddRuntimeInstrumentation()
+            .Build();
         
         // Create metrics instruments
         private static readonly Counter<long> _invocationCounter = _meter.CreateCounter<long>(
@@ -92,7 +100,10 @@ namespace HelloWorldDotNet
                 _statusCounter.Add(1, new KeyValuePair<string, object?>("runtime", "dotnet"),
                                      new KeyValuePair<string, object?>("function_name", context.FunctionName),
                                      new KeyValuePair<string, object?>("status", status));
-                
+
+                // Please do not use this in production, it's just for demonstration
+                _meterProvider.ForceFlush();
+
                 return response;
             }
             catch (Exception ex)

@@ -29,6 +29,9 @@ export class ExampleOtelLambdaStack extends cdk.Stack {
     const cloudWatchMetricsPolicy = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: [
+        'logs:CreateLogGroup',
+        'logs:CreateLogStream',
+        'logs:PutLogEvents',
         'cloudwatch:PutMetricData'
       ],
       resources: ['*']
@@ -97,9 +100,11 @@ export class ExampleOtelLambdaStack extends cdk.Stack {
       logRetention: logs.RetentionDays.ONE_WEEK,
       layers: [adotLayers.dotnet],
       environment: {
-        OTEL_METRICS_EXPORTER: 'cloudwatch',
+        OTEL_EXPORTER_OTLP_ENDPOINT: 'http://localhost:4317',
+        OTEL_METRICS_EXPORTER: 'otlp',
         OTEL_RESOURCE_ATTRIBUTES: 'service.name=hello-world-dotnet',
-        OPENTELEMETRY_COLLECTOR_CONFIG_URI: '/var/task/collector.yaml'
+        OPENTELEMETRY_COLLECTOR_CONFIG_URI: '/var/task/collector.yaml',
+        OTEL_AWS_REGION: this.region,
       }
     });
     dotnetFunction.addToRolePolicy(cloudWatchMetricsPolicy);
